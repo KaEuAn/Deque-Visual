@@ -161,21 +161,21 @@ public:
 		return (last - first + real_size) % real_size;
 	}
 
-	void push_back(T& x) {
+	void push_back(const T x) {
 		tryExtend();
 		container[last] = x;
 		makeNext(last);
 	}
-	void push_front(T& x) {
+	void push_front(const T x) {
 		tryExtend();
 		makePrevious(first);
 		container[first] = x;
 	}
-	void pop_back(T& x) {
+	void pop_back() {
 		makePrevious(last);
 		tryMinimize();
 	}
-	void pop_front(T& x) {
+	void pop_front() {
 		makeNext(first);
 		tryMinimize();
 	}
