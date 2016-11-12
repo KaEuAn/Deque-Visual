@@ -18,14 +18,14 @@ class Deque {
 	void tryExtend() {
 		if (size() == real_size - 1) {
 			T *new_container = new T[real_size * EXP_CONST];
-			real_size *= EXP_CONST;
 			uint32_t j = 0;
 			for (uint32_t i = first; i != last; makeNext(i), ++j) {
-				new_container[i] = container[i];
+				new_container[j] = container[i];
 			}
 			first = 0;
 			last = j;
 			T *per = container;
+			real_size *= EXP_CONST;
 			container = new_container;
 			delete[] per;
 		}
@@ -34,13 +34,13 @@ class Deque {
 	void tryMinimize() {
 		if (size() * EXP_CONST * EXP_CONST < real_size) {
 			T *new_container = new T[real_size / EXP_CONST];
-			real_size /= EXP_CONST;
 			uint32_t j = 0;
 			for (uint32_t i = first; i != last; makeNext(i), ++j) {
 				new_container[j] = container[i];
 			}
 			first = 0;
 			last = j;
+			real_size /= EXP_CONST;
 			T *per = container;
 			container = new_container;
 			delete[] per;
@@ -57,6 +57,9 @@ public:
 		container = new T[real_size];
 		first = a.first;
 		last = a.last;
+		for (uint32_t i = first; i != last; a.makeNext(i)) {
+			container[i] = a.container[i];
+		}
 	}
 
 	~Deque() {

@@ -14,7 +14,7 @@ class PushAndPopTests : public ::testing::Test {
 
 TEST(CommonTests, first) {
 	Deque<int> deq;
-	int a[100];
+	int a[120];
 	for (int k = -44, j = 0; k < 60; ++k, ++j) {
 		a[j] = k;
 	}
@@ -26,51 +26,52 @@ TEST(CommonTests, first) {
 	}
 	int i = 0;
 	for (Deque<int>::iterator it = deq.begin(); it != deq.end(); ++it, ++i) {
-		ASSERT_NE(a[i], *it);
-		ASSERT_NE(a[i], deq[i]);
+		ASSERT_EQ(a[i], *it);
+		ASSERT_EQ(a[i], deq[i]);
 	}
+	--i;
 	for (std::reverse_iterator<Deque<int>::iterator> it = deq.rbegin(); it != deq.rend(); ++it, --i) {
-		ASSERT_NE(a[i], *it);
-		ASSERT_NE(a[i], deq[i]);
+		ASSERT_EQ(a[i], *it);
+		ASSERT_EQ(a[i], deq[i]);
 	}
 }
 
 TEST(CommonTests, second) {
 	Deque<int> deq;
-	for (size_t i = 0; i < 45; i++)
+	for (size_t i = 0; i < 45; ++i)
 	{
 		if (rand() % 2 == 0)
 			deq.push_back(rand());
 		else
 			deq.push_front(rand());
 	}
-	Deque<int> deq1;
-	for (size_t i = 0; i < 45; i++)
+	Deque<int> deq1(deq);
+	for (size_t i = 0; i < 45; ++i)
 	{
-		ASSERT_NE(deq[i], deq1[i]);
+		ASSERT_EQ(deq[i], deq1[i]) << "i is " << i << '\n';
 	}
 }
 
 TEST(TimeLimitTests, first) {
 	Deque<std::pair<int, double> > deq;
 	clock_t start = clock();
-	for (size_t i = 0; i < 10000000; i++)
+	for (size_t i = 0; i < 3000000; i++)
 	{
 		std::pair<int, double> x = { 1, 0.5 };
 		deq.push_back(x);
 		deq.push_front(x);
 	}
-	clock_t time = (clock() - start) / CLOCKS_PER_SEC;
-	ASSERT_GT(time, 2) << time << " - is more than expected. Operators push";
+	double time = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+	ASSERT_LT(time, 2,5) << time << " - is more than expected. Operators push";
 	start = clock();
-	for (size_t i = 0; i < 10000000; i++)
+	for (size_t i = 0; i < 3000000; i++)
 	{
 		std::pair<int, double> x = { 1, 0.5 };
 		deq.pop_back();
 		deq.pop_front();
 	}
-	time = (clock() - start) / CLOCKS_PER_SEC;
-	ASSERT_GT(time, 2) << time << " - is more than expected. Operators pop";
+	time = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+	ASSERT_LT(time, 2.5) << time << " - is more than expected. Operators pop";
 }
 
 TEST(PushAndPopTests, first) {
@@ -92,5 +93,7 @@ TEST(PushAndPopTests, first) {
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
+	::testing::FLAGS_gtest_repeat = 10;
+	::testing::FLAGS_gtest_break_on_failure = true;
 	return RUN_ALL_TESTS();
 }
