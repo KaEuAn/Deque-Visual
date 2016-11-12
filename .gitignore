@@ -1,0 +1,8 @@
+*.o
+*.txt
+*.exe
+.idea/
+gtest*
+*.vcxproj*
+Release
+Debug
