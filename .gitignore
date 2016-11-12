@@ -6,3 +6,5 @@ gtest*
 *.vcxproj*
 Release
 Debug
+*.tmp
+*.TMP

@@ -4,6 +4,46 @@
 #include <time.h>
 #include <deque>
 
+template <typename T>
+void makeRandomPush(T x, Deque<T>& my_deque) {
+	int one = rand();
+	if (one % 2 == 0)
+		my_deque.push_back(x);
+	else
+		my_deque.push_front(x);
+}
+
+template <typename T>
+void makeRandomPop(Deque<T>& my_deque) {
+	int one = rand();
+	if (one % 2 == 0)
+		my_deque.pop_back();
+	else
+		my_deque.pop_front();
+}
+
+template <typename T>
+void makeRandomIndex(Deque<T>& my_deque) {
+	my_deque[rand() % my_deque.size()];
+}
+
+template <typename T>
+void makeRandomOperation(Deque<T>& my_deque) {
+	T x;
+	if (my_deque.size() == 0) {
+		makeRandomPush<T>(x, my_deque);
+	}
+	else {
+		int one = rand();
+		if (one % 3 == 0)
+			makeRandomPush<T>(x, my_deque);
+		else if (one % 3 == 1)
+			makeRandomIndex<T>(my_deque);
+		else
+			makeRandomPop<T>(my_deque);
+	}
+	}
+
 
 class CommonTests : public ::testing::Test {
 };
@@ -52,32 +92,95 @@ TEST(CommonTests, second) {
 	}
 }
 
-TEST(TimeLimitTests, first) {
-	Deque<std::pair<int, double> > deq;
+template <typename T>
+void TLTest(uint32_t operations_count) {
+	Deque<T> deq;
 	clock_t start = clock();
-	for (size_t i = 0; i < 3000000; i++)
-	{
-		std::pair<int, double> x = { 1, 0.5 };
-		deq.push_back(x);
-		deq.push_front(x);
+	for (size_t i = 0; i < operations_count; ++i) {
+		T x;
+		makeRandomPush<T>(x, deq);
+	}
+	double time1 = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+	ASSERT_LT(time1, 2.5) << time1 << " - is more than expected. Operators push";
+	start = clock();
+	for (size_t i = 0; i < operations_count; ++i) {
+		int one = rand() % deq.size();
+		deq[i];
+	}
+	double time2 = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+	ASSERT_LT(time2, 2.5) << time2 << " - is more than expected. Operators pop";
+	start = clock();
+	for (size_t i = 0; i < operations_count; ++i) {
+		T x;
+		makeRandomPop<T>(deq);
+	}
+	double time3 = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
+	std::cout << "[----------] "<< operations_count << "pushs in " << time1 << " seconds\n"
+		<< "[----------] " << operations_count << "[] in " << time2 << " seconds\n"
+		<< "[----------] " << operations_count << "pops in " << time3 << " seconds\n";
+}
+
+TEST(TimeLimitTests, first) {
+	for (size_t i = 30; i < 3000010; i*=10) {
+		TLTest<std::pair<int, double> >(i);
+	}
+}
+
+template <typename T>
+void TLTestRandom(uint32_t operations_count) {
+	Deque<T> deq;
+	clock_t start = clock();
+	for (size_t i = 0; i < operations_count; ++i) {
+		makeRandomOperation<T>(deq);
 	}
 	double time = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
-	ASSERT_LT(time, 2,5) << time << " - is more than expected. Operators push";
-	start = clock();
-	for (size_t i = 0; i < 3000000; i++)
-	{
-		std::pair<int, double> x = { 1, 0.5 };
-		deq.pop_back();
-		deq.pop_front();
+	std::cout << "[----------] " << operations_count << "random operation in " << time << " seconds\n";
+}
+
+TEST(TimeLimitTests, randomChoiceOperations) {
+	for (size_t i = 60; i < 6000010; i *= 10) {
+		TLTestRandom<std::pair <std::pair<bool, double>, float> >(i);
 	}
-	time = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
-	ASSERT_LT(time, 2.5) << time << " - is more than expected. Operators pop";
+}
+
+void oneStep(bool isPush, std::deque<int>& deq, Deque<int>& my_deque) {
+	for (size_t i = 0; i < 450; ++i)
+	{
+		int one = rand();
+		if (rand() % 2 == 0) {
+			if (isPush) {
+				deq.push_back(one);
+				my_deque.push_back(one);
+			}
+			else {
+				deq.pop_back();
+				my_deque.pop_back();
+			}
+		} else {
+			if (isPush) {
+				deq.push_front(one);
+				my_deque.push_front(one);
+			} else {
+				deq.pop_front();
+				my_deque.pop_front();
+			}
+		}
+		if (deq.size() < 2)
+			continue;
+		ASSERT_EQ(deq.size(), my_deque.size());
+		one %= deq.size();
+		ASSERT_EQ(deq[one], my_deque[one]);
+	}
 }
 
 TEST(PushAndPopTests, first) {
 	std::deque<int> deq;
 	Deque<int> my_deque;
-	for (size_t i = 0; i < 45; i++)
+	for (size_t i = 0; i < 10; ++i) {
+		oneStep(true, deq, my_deque);
+		oneStep(false, deq, my_deque);
+	}
+	for (size_t i = 0; i < 450; ++i)
 	{
 		int one = rand();
 		if (rand() % 2 == 0) {
@@ -88,12 +191,15 @@ TEST(PushAndPopTests, first) {
 			deq.push_front(one);
 			my_deque.push_front(one);
 		}
+		ASSERT_EQ(deq.size(), my_deque.size());
+		one %= deq.size();
+		ASSERT_EQ(deq[one], my_deque[one]);
 	}
 }
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
-	::testing::FLAGS_gtest_repeat = 10;
+	::testing::FLAGS_gtest_repeat = 3;
 	::testing::FLAGS_gtest_break_on_failure = true;
 	return RUN_ALL_TESTS();
 }
