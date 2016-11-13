@@ -52,6 +52,7 @@ class TimeLimitTests : public ::testing::Test {
 };
 class PushAndPopTests : public ::testing::Test {
 };
+class IteratorsTests: public ::testing::Test{};
 
 TEST(CommonTests, first) {
 	Deque<int> deq;
@@ -204,6 +205,27 @@ TEST(PushAndPopTests, first) {
 		ASSERT_EQ(new_deque.front(), my_deque.front());
 		ASSERT_EQ(new_deque[one], my_deque[one]);
 	}
+}
+
+TEST(IteratorsTests, first) {
+	Deque<std::pair<int, int> > deq;
+	Deque<std::pair<int, int> > deq2;
+	for (size_t i = 0; i < 400; ++i) {
+		const std::pair<int, int> one = {i, 2 * i};
+		makeRandomPush<std::pair<int, int> >(one, deq);
+		makeRandomPush<std::pair<int, int> >(one, deq2);
+	}
+	std::reverse_iterator< Deque<std::pair<int, int> >::iterator > it = deq.rbegin();
+	std::reverse_iterator< Deque<std::pair<int, int> >::const_iterator > it2 = deq.crbegin();
+	std::reverse_iterator< Deque<std::pair<int, int> >::iterator > it3 = it;
+	it->first += 8;
+	ASSERT_EQ((*it), deq.back());
+	ASSERT_EQ(it->first, deq[deq.size() - 1].first);
+	ASSERT_EQ(*it2, *it);
+	it3 += 10;
+	ASSERT_EQ(*it3, deq[deq.size() - 11]);
+	it3 += (it3 - it);
+	ASSERT_EQ(*it3, deq[deq.size() - 21]);
 }
 
 int main(int argc, char **argv) {

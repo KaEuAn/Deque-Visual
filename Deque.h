@@ -71,8 +71,8 @@ public:
 
 
 	template <typename _T>
-	class DequeIterator : public std::iterator <std::random_access_iterator_tag, T> {
-		typedef typename std::iterator<std::random_access_iterator_tag, T>::difference_type differ;
+	class DequeIterator : public std::iterator <std::random_access_iterator_tag, T, std::ptrdiff_t, _T*, _T& > {
+		typedef typename std::iterator<std::random_access_iterator_tag, T, std::ptrdiff_t, _T*, _T& >::difference_type differ;
 
 		uint32_t index;
 		const Deque<T>* my_deque;
@@ -120,6 +120,10 @@ public:
 		differ operator - (const DequeIterator& x) const {
 			return (index - x.index + my_deque->real_size) % my_deque->real_size;
 		}
+		DequeIterator operator + (const differ& x) const {
+			uint32_t new_index = (index + x) % (my_deque->real_size);
+			return DequeIterator(new_index, my_deque);
+		}
 
 
 		bool operator <(const DequeIterator& a) const {
@@ -147,17 +151,14 @@ public:
 		bool operator !=(const DequeIterator& a) const {
 			return index != a.index;
 		}
-		_T& operator * () const {
+		_T& operator *() const {
 			return my_deque->container[index];
 		}
 		_T* operator ->() {
 			return my_deque->container + index;
 		}
 
-		DequeIterator operator + (const differ& x) {
-			uint32_t new_index = (index + x) % (my_deque->real_size);
-			return DequeIterator(new_index, my_deque);
-		}
+
 	};
 	typedef DequeIterator<T> iterator;
 	typedef DequeIterator<const T> const_iterator;
