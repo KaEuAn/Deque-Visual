@@ -30,7 +30,8 @@ void makeRandomIndex(Deque<T>& my_deque) {
 template <typename T>
 void makeRandomOperation(Deque<T>& my_deque) {
 	T x;
-	if (my_deque.size() == 0) {
+
+	if (my_deque.empty()) {
 		makeRandomPush<T>(x, my_deque);
 	}
 	else {
@@ -65,6 +66,8 @@ TEST(CommonTests, first) {
 		deq.push_front(j);
 	}
 	int i = 0;
+	ASSERT_FALSE(deq.empty());
+	ASSERT_EQ(deq.size(), 104);
 	for (Deque<int>::iterator it = deq.begin(); it != deq.end(); ++it, ++i) {
 		ASSERT_EQ(a[i], *it);
 		ASSERT_EQ(a[i], deq[i]);
@@ -194,6 +197,12 @@ TEST(PushAndPopTests, first) {
 		ASSERT_EQ(deq.size(), my_deque.size());
 		one %= deq.size();
 		ASSERT_EQ(deq[one], my_deque[one]);
+		ASSERT_EQ(deq.back(), my_deque.back());
+		ASSERT_EQ(deq.front(), my_deque.front());
+		Deque<int> new_deque(my_deque);
+		ASSERT_EQ(new_deque.back(), my_deque.back());
+		ASSERT_EQ(new_deque.front(), my_deque.front());
+		ASSERT_EQ(new_deque[one], my_deque[one]);
 	}
 }
 

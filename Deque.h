@@ -1,3 +1,6 @@
+//link to my project on githab
+//https://github.com/KaEuAn/Deque-Visual
+
 #include <iostream>
 
 template <typename T>
@@ -69,6 +72,8 @@ public:
 
 	template <typename _T>
 	class DequeIterator : public std::iterator <std::random_access_iterator_tag, T> {
+		typedef typename std::iterator<std::random_access_iterator_tag, T>::difference_type differ;
+
 		uint32_t index;
 		const Deque<T>* my_deque;
 		void makeNext(uint32_t& i) const {
@@ -77,32 +82,46 @@ public:
 		void makePrevious(uint32_t& i) const {
 			i = (i - 1 + my_deque->real_size) % my_deque->real_size;
 		}
-
 	public:
 		DequeIterator(uint32_t ind, const Deque<T>* deq) : index(ind), my_deque(deq) {}
 		DequeIterator(const DequeIterator& x) : index(x.index), my_deque(x.my_deque) {}
 
-		DequeIterator& operator ++ () {
+		DequeIterator& operator ++() {
 			makeNext(index);
 			return *this;
 		}
-		DequeIterator& operator -- () {
+		DequeIterator& operator --() {
 			makePrevious(index);
 			return *this;
 		}
-		DequeIterator& operator += (int n) {
-			index += n - 1;
-			makeNext(index);
+		const DequeIterator operator --(int) {
+			DequeIterator previous = *this;
+			--(*this);
+			return previous;
+		}
+		const DequeIterator operator ++(int) {
+			DequeIterator previous = *this;
+			++(*this);
+			return previous;
+		}
+
+		DequeIterator& operator += (const differ& x) {
+			index = (index + x) % (my_deque->real_size);
 			return *this;
 		}
-		DequeIterator& operator -= (int n) {
-			index -= n - 1;
-			makePrevious(index);
+		DequeIterator& operator -= (const differ& x) {
+			index = (index - x + my_deque->real_size) % my_deque->real_size;
 			return *this;
 		}
-		int operator - (const DequeIterator& a) const {
-			return (index - a.index);
+		DequeIterator operator - (const differ& x) const {
+			uint32_t new_index = (index - x + my_deque->real_size) % my_deque->real_size;
+			return DequeIterator(new_index, my_deque);
 		}
+		differ operator - (const DequeIterator& x) const {
+			return (index - x.index + my_deque->real_size) % my_deque->real_size;
+		}
+
+
 		bool operator <(const DequeIterator& a) const {
 			if (my_deque->first < my_deque->last)
 				return index < a.index;
@@ -128,15 +147,22 @@ public:
 		bool operator !=(const DequeIterator& a) const {
 			return index != a.index;
 		}
-		T& operator * () const {
+		_T& operator * () const {
 			return my_deque->container[index];
+		}
+		_T* operator ->() {
+			return my_deque->container + index;
+		}
+
+		DequeIterator operator + (const differ& x) {
+			uint32_t new_index = (index + x) % (my_deque->real_size);
+			return DequeIterator(new_index, my_deque);
 		}
 	};
 	typedef DequeIterator<T> iterator;
-	typedef DequeIterator<const T> citerator;
-	typedef std::reverse_iterator<iterator> riterator;
-	typedef std::reverse_iterator<citerator> criterator;
-
+	typedef DequeIterator<const T> const_iterator;
+	typedef std::reverse_iterator<iterator> reverse_iterator;
+	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 
 	const T& back() const {
@@ -200,34 +226,34 @@ public:
 	iterator end() {
 		return iterator(last, this);
 	}
-	citerator cbegin() const {
-		return citerator(first, this);
+	const_iterator cbegin() const {
+		return const_iterator(first, this);
 	}
-	citerator cend() const {
-		return citerator(last, this);
+	const_iterator cend() const {
+		return const_iterator(last, this);
 	}
-	citerator begin() const {
+	const_iterator begin() const {
 		return cbegin();
 	}
-	citerator end() const {
+	const_iterator end() const {
 		return cend();
 	}
-	riterator rend() {
-		return riterator(begin());
+	reverse_iterator rend() {
+		return reverse_iterator(begin());
 	}
-	riterator rbegin() {
-		return riterator(end());
+	reverse_iterator rbegin() {
+		return reverse_iterator(end());
 	}
-	criterator crend() const {
-		return criterator(cbegin());
+	const_reverse_iterator crend() const {
+		return const_reverse_iterator(cbegin());
 	}
-	criterator crbegin() const {
-		return criterator(cend());
+	const_reverse_iterator crbegin() const {
+		return const_reverse_iterator(cend());
 	}
-	criterator rend() const {
+	const_reverse_iterator rend() const {
 		return crend();
 	}
-	criterator rbegin() const {
+	const_reverse_iterator rbegin() const {
 		return crbegin();
 	}
 
